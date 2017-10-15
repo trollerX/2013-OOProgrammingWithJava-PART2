@@ -1,137 +1,91 @@
 package wormgame.domain;
-
+ 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import wormgame.Direction;
-
-/**
- *
- * @author TrollerX
- */
+ 
 public class Worm {
-
-    private Direction direction;
+ 
     private List<Piece> pieces;
+    private int x;
+    private int y;
+    private Direction direction;
     private boolean grow;
-
-    public Worm(int originalX, int originalY, Direction originalDirection) {
-        pieces = new ArrayList<Piece>();
-        pieces.add(new Piece(originalX, originalY));
-        this.direction = originalDirection;
-        grow = true;
+ 
+    public Worm(int x, int y, Direction direction) {
+        this.x = x;
+        this.y = y;
+        this.direction = direction;
+        this.pieces = new ArrayList<Piece>();
+        this.pieces.add(new Piece(x, y));
     }
-
+ 
     public Direction getDirection() {
         return direction;
     }
-
-    public void setDirection(Direction dir) {
-        this.direction = dir;
+ 
+    public void setDirection(Direction direction) {
+        this.direction = direction;
     }
-
+ 
     public int getLength() {
-        return getPieces().size();
+        return pieces.size();
     }
-
+ 
     public List<Piece> getPieces() {
         return pieces;
     }
-
+ 
     public void move() {
-        if (grow == false) {
-            addSegment();
-            removeLastSegment();
-        } else if (grow == true) {
-            addSegment();
-            if (pieces.size() > 2) {
-                grow = false;
-            }
+        int newX = pieces.get(pieces.size() - 1).getX();
+        int newY = pieces.get(pieces.size() - 1).getY();
+ 
+        if (direction == Direction.RIGHT) {
+            newX++;
+        } else if (direction == Direction.LEFT) {
+            newX--;
+        } else if (direction == Direction.DOWN) {
+            newY++;
+        } else {
+            newY--;
         }
+ 
+        if (!grow && getLength() > 2) {
+            pieces.remove(0);
+        } else {
+            grow = false;
+        }
+ 
+        pieces.add(new Piece(newX, newY));
     }
-
+ 
     public void grow() {
         grow = true;
     }
-
-    private void removeLastSegment() {
-        pieces.remove(0);
-    }
-
-    private void addSegment() {
-        Piece head = getWormHead();
-        Direction dir = getDirection();
-
-        switch (dir) {
-            case DOWN: {
-                pieces.add(new Piece(head.getX(), head.getY() + 1));
-                break;
-            }
-            case LEFT: {
-                pieces.add(new Piece(head.getX() - 1, head.getY()));
-                break;
-            }
-            case RIGHT: {
-                pieces.add(new Piece(head.getX() + 1, head.getY()));
-                break;
-            }
-            case UP: {
-                pieces.add(new Piece(head.getX(), head.getY() - 1));
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
+ 
     public boolean runsInto(Piece piece) {
-        for (Piece p : this.getPieces()) {
-            if (p.runsInto(piece)) {
+        for (Piece p : pieces) {
+            if (same(p, piece)) {
                 return true;
             }
         }
+ 
         return false;
     }
-
+ 
     public boolean runsIntoItself() {
-//        Piece head = returnHead();
-//        for (int i = 0; i < worm.size() - 1; i++) {
-//            if (head.runsInto(worm.get(i))) {
-//                return true;
-//            }
-//        }
-//        return false;
-
-        Set<Piece> wormSet = new HashSet<Piece>(pieces);
-        return wormSet.size() < pieces.size();
+        for (int i = 0; i < pieces.size(); i++) {
+            for (int j = i + 1; j < pieces.size(); j++) {
+                if (same(pieces.get(i), pieces.get(j))) {
+                    return true;
+                }
+            }
+        }
+ 
+        return false;
     }
-
-//    public boolean hitsBorder(int width, int height) {
-//        Piece head = getWormHead();
-//        if (head.getX() == 0 && direction == Direction.LEFT) {
-//            return true;
-//        } else if (head.getY() == 0 && direction == Direction.UP) {
-//            return true;
-//        } else if (head.getX() == width && direction == Direction.RIGHT) {
-//            return true;
-//        } else if (head.getY() == height && direction == Direction.DOWN) {
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
-
-    public Piece getWormHead() {
-        return pieces.get(pieces.size() - 1);
+ 
+    private boolean same(Piece p1, Piece p2) {
+        return p1.getX() == p2.getX() && p1.getY() == p2.getY();
     }
-//    @Override
-//    public String toString() {
-//        StringBuilder str = new StringBuilder();
-//        for (Piece p : worm) {
-//            str.append(p.toString());
-//        }
-//        return str.toString();
-//    }
-//    }
 }
